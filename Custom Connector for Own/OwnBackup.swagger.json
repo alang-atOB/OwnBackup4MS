@@ -1,0 +1,1096 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "OwnBackup API",
+    "description": "**OwnBackup provides API access through all pricing plans with the purpose to let you manipulate and export some of your OwnBackup jobs and data.**\n\n**Common use cases:**\n\n-   *GDPR request relay from Salesforce* - Automating the GDPR process end to end from Salesforce to include OwnBackup snapshots as well.\n-   *Audit log monitoring* - Integrate the OwnBackup events audit log to your central monitoring system for important or suspicious behavior.\n-   *Export backup to SQL* - Automate backups to a 3rd party database for further processing (such as BI or BA).\n-   *Execute Enhanced Sandbox Seeding jobs* - Kickoff jobs directly from the API."
+  },
+  "host": "hipaa1.ownbackup.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/auth/v1/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticate a user by email and password",
+        "operationId": "UserLogin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "email"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "session_id": {
+                  "type": "string",
+                  "description": "session_id"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/auth/v1/logout": {
+      "post": {
+        "summary": "User logout",
+        "description": "Logout",
+        "operationId": "UserLogout",
+        "parameters": [
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "401",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "summary": "Get account events history",
+        "description": "Get the account event history from the beginning of time (default route) or all events that follows a specific event (use <from> parameter with the id of an event), results are limited to 1,000 events per request.",
+        "operationId": "GetAccountEventsHistory",
+        "parameters": [
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "created_at": {
+                    "type": "string",
+                    "description": "created_at"
+                  },
+                  "event_id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "event_id"
+                  },
+                  "ip_address": {
+                    "type": "string",
+                    "description": "ip_address"
+                  },
+                  "key": {
+                    "type": "string",
+                    "description": "key"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "description": "parameters"
+                  },
+                  "service_id": {
+                    "type": "string",
+                    "description": "service_id"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "source"
+                  },
+                  "user_email": {
+                    "type": "string",
+                    "description": "user_email"
+                  },
+                  "user_id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "user_id"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{service_id}/backups": {
+      "get": {
+        "summary": "List backups for a specific service",
+        "description": "Get a list of all available backups for a given service.",
+        "operationId": "ListBackupsForASpecificService",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "{{session_id}}",
+            "description": "X-SESSION-ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "id"
+                  },
+                  "num_sections": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_sections"
+                  },
+                  "num_updated_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_updated_items"
+                  },
+                  "num_sections_error": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_sections_error"
+                  },
+                  "num_api_calls": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_api_calls"
+                  },
+                  "num_inserted_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_inserted_items"
+                  },
+                  "num_sections_info": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_sections_info"
+                  },
+                  "num_sections_warning": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_sections_warning"
+                  },
+                  "num_sections_ok": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_sections_ok"
+                  },
+                  "num_deleted_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_deleted_items"
+                  },
+                  "trigger_type": {
+                    "type": "string",
+                    "description": "trigger_type"
+                  },
+                  "completed_at": {
+                    "type": "string",
+                    "description": "completed_at"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "status"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/services/{service_id}/backups/{backup_id}": {
+      "get": {
+        "summary": "Get a specific backup",
+        "description": "Get a specific backup by the Service id and Backup id. Parameter backup_id can be 'last'",
+        "operationId": "GetASpecificBackup",
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "id"
+                },
+                "num_sections": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_sections"
+                },
+                "num_updated_items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_updated_items"
+                },
+                "num_sections_error": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_sections_error"
+                },
+                "num_api_calls": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_api_calls"
+                },
+                "num_inserted_items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_inserted_items"
+                },
+                "num_sections_info": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_sections_info"
+                },
+                "num_sections_warning": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_sections_warning"
+                },
+                "num_sections_ok": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_sections_ok"
+                },
+                "num_deleted_items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_deleted_items"
+                },
+                "trigger_type": {
+                  "type": "string",
+                  "description": "trigger_type"
+                },
+                "completed_at": {
+                  "type": "string",
+                  "description": "completed_at"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "status"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/services/{service_id}/backups/{backup_id}/objects": {
+      "get": {
+        "summary": "List objects for a given backup",
+        "description": "Get list of objects in a backup by Service id and Backup id. Parameter backup_id can be 'last'.\nThe following fields: `download_link`, `download_added_link`, `download_removed_link` and `download_changed_link` contain links to the associated data of that backup, stored in CSV format. To download these CSVs, issue an HTTPS GET request (using a valid session) to these URLs.",
+        "operationId": "ListObjectsForAGivenBackup",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "backup_id",
+            "default": "{{backup_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "{{session_id}}",
+            "description": "X-SESSION-ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "id"
+                  },
+                  "download_removed_link": {
+                    "type": "string",
+                    "description": "download_removed_link"
+                  },
+                  "download_changed_link": {
+                    "type": "string",
+                    "description": "download_changed_link"
+                  },
+                  "download_added_link": {
+                    "type": "string",
+                    "description": "download_added_link"
+                  },
+                  "download_link": {
+                    "type": "string",
+                    "description": "download_link"
+                  },
+                  "num_api_calls": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_api_calls"
+                  },
+                  "num_updated_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_updated_items"
+                  },
+                  "num_deleted_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_deleted_items"
+                  },
+                  "num_inserted_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_inserted_items"
+                  },
+                  "num_items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "num_items"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "name"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "message"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "status"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{service_id}/backups/{backup_id}/export": {},
+    "/api/v1/services/{service_id}/backups/{backup_id}/export_to_endpoint": {},
+    "/api/v1/services/{service_id}/gdpr/rectify": {
+      "post": {
+        "summary": "Submit a GDPR rectify request",
+        "description": "submitting a GDPR rectify request",
+        "operationId": "SubmitAGdprRectifyRequest2",
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "record_id": {
+                  "type": "string",
+                  "description": "record_id"
+                },
+                "table_name": {
+                  "type": "string",
+                  "description": "table_name"
+                },
+                "field": {
+                  "type": "string",
+                  "description": "field"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "value"
+                },
+                "comment": {
+                  "type": "string",
+                  "description": "comment"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "id"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{service_id}/gdpr/forget": {
+      "post": {
+        "summary": "Submit a GDPR forget request",
+        "description": "submitting a GDPR forget request",
+        "operationId": "SubmitAGdprForgetRequest",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "{{session_id}}",
+            "description": "X-SESSION-ID"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "x-www-form-urlencoded",
+            "description": "Content-Type"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "application/json",
+            "description": "Accept"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "id"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "List of jobs",
+        "description": "Get a list of all jobs",
+        "operationId": "ListOfJobs",
+        "parameters": [
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "progress": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "progress"
+                },
+                "id": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "id"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "title"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "status"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/jobs/%7B%7Bjob_id%7D%7D": {},
+    "/api/v1/sbs/templates": {},
+    "/api/v1/sbs/templates/{template_id}/seed": {},
+    "/api/v1/sbs/services": {},
+    "/api/v1/sbs/seed/{seed_id}": {},
+    "/api/v1/services": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        },
+        "operationId": "GetAllServices",
+        "summary": "GetAllServices",
+        "description": "Get all services that can be used.",
+        "parameters": [
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "/api/v1/services/{service_id}": {
+      "get": {
+        "summary": "Get information about a specific service.",
+        "description": "Get a specific service by Service id",
+        "operationId": "GetInformationAboutASpecificService.",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "{{session_id}}",
+            "description": "X-SESSION-ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "archived": {
+                  "type": "boolean",
+                  "description": "archived"
+                },
+                "provider": {
+                  "type": "string",
+                  "description": "provider"
+                },
+                "num_items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "num_items"
+                },
+                "displayed_name": {
+                  "type": "string",
+                  "description": "displayed_name"
+                },
+                "return_message": {
+                  "type": "string",
+                  "description": "return_message"
+                },
+                "total_size": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "total_size"
+                },
+                "org_id": {
+                  "type": "string",
+                  "description": "org_id"
+                },
+                "id": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "id"
+                },
+                "secondary_name": {
+                  "type": "string",
+                  "description": "secondary_name"
+                },
+                "return_code": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "return_code"
+                },
+                "last_backup": {
+                  "type": "string",
+                  "description": "last_backup"
+                },
+                "enabled": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "enabled"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "status"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/services/{service_id}/backup_now": {
+      "post": {
+        "summary": "Back up a service manually now",
+        "description": "Start backup a service manually now by Service id.",
+        "operationId": "BackUpAServiceManuallyNow",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "{{session_id}}",
+            "description": "X-SESSION-ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/services/{service_id}/backup_specific_objects_now": {
+      "post": {
+        "summary": "Back up specific objects in a service manually now",
+        "description": "Start a backup for specific objects manually now by Service id.",
+        "operationId": "BackUpSpecificObjectsInAServiceManuallyNow",
+        "parameters": [
+          {
+            "name": "service_id",
+            "default": "{{service_id}}",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "<string>",
+            "description": "X-SESSION-ID"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "default": "multipart/form-data",
+            "description": "Content-Type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "400",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "error"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "message"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/api/v1/sbs/templates/%7B%7Btemplate_id%7D%7D/seed": {},
+    "/api/v1/sbs/seed/%7B%7Bseed_id%7D%7D": {},
+    "/auth/v1/login": {},
+    "/auth/v1/logout": {},
+    "/v1/jobs": {},
+    "/v1/events": {},
+    "/v1/logout": {},
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        },
+        "summary": "GetSpecificJob",
+        "operationId": "GetSpecificJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-SESSION-ID",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "/api/v1/services/:service_id/gdpr/rectify": {}
+  },
+  "definitions": {},
+  "parameters": {},
+  "responses": {},
+  "securityDefinitions": {
+    "basic-auth": {
+      "type": "basic"
+    }
+  },
+  "security": [
+    {
+      "basic-auth": []
+    }
+  ],
+  "tags": []
+}
